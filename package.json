@@ -1,0 +1,25 @@
+{
+  "name": "hapi-forgot",
+  "version": "0.0.1",
+  "description": "Password reset plugin for hapi",
+  "main": "index.js",
+  "scripts": {
+    "test": "make test-cov"
+  },
+  "repository": "git@github.com:chmanie/hapi-forgot.git",
+  "author": "Christian Maniewski <chmanie@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "code": "^1.2.1",
+    "hapi": "^7.5.0",
+    "lab": "^5.0.2",
+    "sinon": "^1.12.1"
+  },
+  "dependencies": {
+    "boom": "^2.6.0",
+    "catbox": "^4.2.0",
+    "catbox-memory": "^1.1.1",
+    "hoek": "^2.8.1",
+    "joi": "^4.8.0"
+  }
+}

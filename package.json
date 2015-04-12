@@ -1,6 +1,6 @@
 {
   "name": "jeton",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Create disposable tokens using catbox (great for email token implementations)",
   "main": "index.js",
   "scripts": {

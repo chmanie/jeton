@@ -78,7 +78,7 @@ describe('Token storage', function() {
 
 		it('creates tokens', function (done) {
 
-			tokenStorage.create('me@me.com', function (err, token) {
+			tokenStorage.store('me@me.com', function (err, token) {
 				expect(token).to.be.a.string();
 	    		expect(token).to.have.length(64);
 				done();
@@ -88,7 +88,7 @@ describe('Token storage', function() {
 
     	it('creates tokens with additional data', function (done) {
 
-    		tokenStorage.create('me@me.com', { type: 'forgot' }, function (err, token) {
+    		tokenStorage.store('me@me.com', { type: 'forgot' }, function (err, token) {
     			expect(token).to.be.a.string();
         		expect(token).to.have.length(64);
     			done();
@@ -102,7 +102,7 @@ describe('Token storage', function() {
     			cb(new Error('Fake err'));
     		});
 
-    		tokenStorage.create('me@me.com', function (err) {
+    		tokenStorage.store('me@me.com', function (err) {
     			expect(err).to.be.instanceof(Error);
     			Catbox.Policy.prototype.set.restore();
     			done();
@@ -130,7 +130,7 @@ describe('Token storage', function() {
         it('does not retrieve token data if it does not exist', function (done) {
 
             tokenStorage.retrieve('myothertoken', 'me@me.com', function (err, data) {
-                expect(data).to.be.undefined();
+                expect(data).to.be.null();
                 done();
             });
 
@@ -144,13 +144,51 @@ describe('Token storage', function() {
     			if (err) return done(err);
 
     			tokenStorage.retrieve('mytoken', 'me@moo.com', function (err, data) {
-    				expect(data).to.be.undefined();
+    				expect(err).to.be.instanceof(Error);
+                    expect(err.message).to.contain('Invalid identity');
     				done();
     			});
 
     		});
 
     	});
+
+        it('retrieves token data without identity if checkIdentity is false', function (done) {
+
+            tokenStorage.config.checkIdentity = false;
+
+            tokenStorage._policy.set('mytoken', {
+                identity: 'me@me.com'
+            }, 0, function (err) {
+                if (err) return done(err);
+
+                tokenStorage.retrieve('mytoken', function (err, data) {
+                    expect(data).to.be.an.object();
+                    expect(data.identity).to.equal('me@me.com');
+                    tokenStorage.config.checkIdentity = true;
+                    done();
+                });
+
+            });
+
+        });
+
+        it('errors when trying to get token without identity when checkIdentity is true', function (done) {
+
+            tokenStorage._policy.set('mytoken', {
+                identity: 'beep@boop.com'
+            }, 0, function (err) {
+                if (err) return done(err);
+
+                tokenStorage.retrieve('mytoken', function (err, data) {
+                    expect(err).to.be.instanceof(Error);
+                    expect(err.message).to.contain('Identity has to be provided');
+                    done();
+                });
+
+            });
+
+        });
 
 
     	it('invalidates tokens', function (done) {

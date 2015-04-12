@@ -23,7 +23,6 @@ var jeton = require('jeton')({
   checkIdentity: true,
   engine: require('catbox-memory'),
   engineOptions: {},
-  storageName: 'tokens',
   segmentName: 'token',
   policyOptions: {}
 });
@@ -63,10 +62,6 @@ engineOptions: {
   partition: 'tokens'
 }
 ```
-
-#### storageName (='tokens')
-
-Shortcut for ```engineOptions.partition```.
 
 #### segmentName (='token')
 

@@ -11,15 +11,12 @@
   "license": "MIT",
   "devDependencies": {
     "code": "^1.2.1",
-    "hapi": "^7.5.0",
     "lab": "^5.0.2",
     "sinon": "^1.12.1"
   },
   "dependencies": {
-    "boom": "^2.6.0",
     "catbox": "^4.2.0",
     "catbox-memory": "^1.1.1",
-    "hoek": "^2.8.1",
-    "joi": "^4.8.0"
+    "defaults": "^1.0.2"
   }
 }

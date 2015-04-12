@@ -1,14 +1,7 @@
 // Load modules
 
-var Lab = require('lab'),
-    Hapi = require('hapi'),
-    Code = require('code'),
-    Boom = require('boom'),
-    sinon = require('sinon');
-
-// Declare internals
-
-var internals = {};
+var Lab = require('lab');
+var Code = require('code');
 
 // Test shortcuts
 
@@ -17,74 +10,159 @@ var beforeEach = lab.beforeEach;
 var describe = lab.experiment;
 var it = lab.test;
 var expect = Code.expect;
+var sinon = require('sinon');
 
-describe('folk main plugin', function() {
+describe('Token storage', function() {
 
-    var server;
+	var Catbox = require('catbox');
 
-    beforeEach(function (done) {
-        server = new Hapi.Server();
-        done();
+    describe('general functions and initialization', function () {
+
+        it('initializes without options', function (done) {
+            expect(function () {
+                require('../lib')();
+            }).not.to.throw();
+
+            done();
+
+        });
+
+        it('initializes with options', function (done) {
+            expect(function () {
+                require('../lib')({
+                    expires: 48*60*60*1000
+                });
+            }).not.to.throw();
+
+            done();
+
+        });
+
+        it('generates a token', function (done) {
+            var token = require('../lib')().generate();
+            expect(token).to.be.a.string();
+            expect(token).to.have.length(64);
+            done();
+        });
+
+        it('starts the token storage', function (done) {
+            var token = require('../lib')();
+            token.start(function (err) {
+                if (err) throw err;
+                done();
+            });
+        });
+
+        it('errors on catbox engine start error', function (done) {
+            var token = require('../lib')();
+
+            sinon.stub(Catbox.Client.prototype, 'start', function (cb) {
+                cb(new Error('Fake err'));
+            });
+
+            token.start(function (err) {
+                expect(err).to.be.instanceof(Error);
+                Catbox.Client.prototype.start.restore();
+                done();
+            });
+        });
     });
 
-    describe('plugin registration', function () {
+    describe('token CRI', function () {
 
-        it('should register with options and appends tokenStorage', function(done) {
+    	var tokenStorage = require('../lib')();
 
-            var mockPlugin = {
-                register: sinon.spy(function (plugin, options, next) {
-                    next();
-                })
-            };
+    	beforeEach(function (done) {
+    		tokenStorage.start(done);
+    	});
 
-            mockPlugin.register.attributes = { name: 'mock!'};
+		it('creates tokens', function (done) {
 
-                server.pack.register({
-                    plugin: require('../'),
-                    options: {
-                        modules: [
-                            {
-                                plugin: mockPlugin,
-                                options: {}
-                            }
-                        ]
-                    }
-                }, function() {
-                    expect(mockPlugin.register.called).to.be.true();
-                    var opts = mockPlugin.register.getCall(0).args[1];
-                    expect(opts.tokenStorage).to.be.an.object();
-                    done();
-                });
+			tokenStorage.create('me@me.com', function (err, token) {
+				expect(token).to.be.a.string();
+	    		expect(token).to.have.length(64);
+				done();
+			});
+
+		});
+
+    	it('creates tokens with additional data', function (done) {
+
+    		tokenStorage.create('me@me.com', { type: 'forgot' }, function (err, token) {
+    			expect(token).to.be.a.string();
+        		expect(token).to.have.length(64);
+    			done();
+    		});
+
+    	});
+
+    	it('errors on policy error', function (done) {
+
+    		sinon.stub(Catbox.Policy.prototype, 'set', function (key, value, ttl, cb) {
+    			cb(new Error('Fake err'));
+    		});
+
+    		tokenStorage.create('me@me.com', function (err) {
+    			expect(err).to.be.instanceof(Error);
+    			Catbox.Policy.prototype.set.restore();
+    			done();
+    		});
+
+    	});
+
+    	it('retrieves token data', function (done) {
+
+    		tokenStorage._policy.set('mytoken', {
+    			identity: 'me@me.com',
+    			foo: 'bar'
+    		}, 0, function (err) {
+    			if (err) return done(err);
+
+    			tokenStorage.retrieve('mytoken', 'me@me.com', function (err, data) {
+    				expect(data.foo).to.equal('bar');
+    				done();
+    			});
+
+    		});
+
+    	});
+
+        it('does not retrieve token data if it does not exist', function (done) {
+
+            tokenStorage.retrieve('myothertoken', 'me@me.com', function (err, data) {
+                expect(data).to.be.undefined();
+                done();
+            });
 
         });
 
-        it('should register with no options', function(done) {
+    	it('does not retrieve token data if identity is wrong', function (done) {
 
-            var mockPlugin = {
-                register: sinon.spy(function (plugin, options, next) {
-                    next();
-                })
-            };
+    		tokenStorage._policy.set('mytoken', {
+    			identity: 'me@me.com'
+    		}, 0, function (err) {
+    			if (err) return done(err);
 
-            mockPlugin.register.attributes = { name: 'mock!'};
+    			tokenStorage.retrieve('mytoken', 'me@moo.com', function (err, data) {
+    				expect(data).to.be.undefined();
+    				done();
+    			});
 
-                server.pack.register({
-                    plugin: require('../'),
-                    options: {
-                        modules: [
-                            {
-                                plugin: mockPlugin
-                            }
-                        ]
-                    }
-                }, function() {
-                    expect(mockPlugin.register.called).to.be.true();
-                    var opts = mockPlugin.register.getCall(0).args[1];
-                    expect(opts.tokenStorage).to.be.an.object();
-                    done();
-                });
+    		});
 
-        });
+    	});
+
+
+    	it('invalidates tokens', function (done) {
+
+    		var dropSpy = sinon.spy(Catbox.Policy.prototype, 'drop');
+
+			tokenStorage.invalidate('mytoken', function () {
+				expect(dropSpy.calledWith('mytoken')).to.be.true();
+				done();
+			});
+
+    	});
 
 
     });

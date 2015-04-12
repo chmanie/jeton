@@ -1,13 +1,13 @@
 {
-  "name": "hapi-forgot",
-  "version": "0.0.1",
-  "description": "Password reset plugin for hapi",
+  "name": "jeton",
+  "version": "0.1.0",
+  "description": "Create disposable tokens using catbox (great for email token implementations)",
   "main": "index.js",
   "scripts": {
     "test": "make test-cov"
   },
-  "repository": "git@github.com:chmanie/hapi-forgot.git",
-  "author": "Christian Maniewski <chmanie@gmail.com>",
+  "repository": "https://github.com/chmanie/jeton.git",
+  "author": "Christian Maniewski <chmanie@fastmail.com>",
   "license": "MIT",
   "devDependencies": {
     "code": "^1.2.1",

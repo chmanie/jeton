@@ -35,7 +35,7 @@ The above example shows the default values. Per default it uses the catbox-memor
 
 #### expires (=86400000)
 
-Time after the stored token is deleted automatically (invalidated). Defaults to 24h.
+Time in milliseconds after the stored token is deleted automatically (invalidated). Defaults to 24h.
 
 #### tokenLength (=32)
 
@@ -82,7 +82,7 @@ Can be used to pass additional policyOptions to the catbox [policy](https://gith
 
 This has to be run before you can start to store or retrieve tokens. It starts the catbox client and establishes a connection to your persistent data store. The callback is called, when the store is successfully initalized. Its signature is `callback(err)` where `err` can be an error passed by the catbox client (e.g. connection problems).
 
-#### jeton.store(identity, [data], callback)
+#### jeton.store(identity, [data,] callback)
 
 Generates a token and stores it while associating the identity. In most cases the identity will be your unique user identifier (e.g. an email address or userId). You can store additional data with the token, but this is optional. This could be the type of the token (e.g. password-reset or email-verification). The callback has the signature `callback(err, token)`, where `token` is the generated token-string.
 
@@ -97,7 +97,7 @@ jeton.store('foo@bar.com', { type: 'check-email' }, function(err, token) {
 });
 ```
 
-#### jeton.retrieve(token, [identity], callback)
+#### jeton.retrieve(token, [identity,] callback)
 
 Retrieves the associated data from store. If `checkIdentity` is enabled (which is default) the identity has to be provided as second argument. The callback has the signature `callback(err, data)` where `data` is the data originally saved with this token. If no token was found, `data` equals to null.
 

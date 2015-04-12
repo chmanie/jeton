@@ -1,5 +1,7 @@
 # jeton
 
+[![Build Status](https://travis-ci.org/chmanie/jeton.svg)](https://travis-ci.org/chmanie/jeton)
+
 This little tool creates disposable tokens (i.e. with an expiration date) which are stored. It is tailored to use in an email-verification or password-reset process where these kind of tokens are needed. To store the tokens and associated data, the power of [catbox](https://github.com/hapijs/catbox) is leveraged. It provides a lot of [strategies](https://github.com/hapijs/catbox#installation) for all kinds of persistent data-storages.
 
 When a stored token is retrieved from db, the identity (i.e. the email address) is verified as an extra security measure.
@@ -49,7 +51,7 @@ You **should** require your desired catbox [strategy](https://github.com/hapijs/
 
 #### engineOptions (={})
 
-If the catbox strategy of your choice requires additional configuration (about 100% of the time), you can pass it here. Example for (catbox-mongodb)[https://github.com/hapijs/catbox-mongodb#options]:
+If the catbox strategy of your choice requires additional configuration (about 100% of the time), you can pass it here. Example for [catbox-mongodb](https://github.com/hapijs/catbox-mongodb#options):
 
 ```javascript
 engineOptions: {

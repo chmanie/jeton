@@ -17,7 +17,8 @@ npm install jeton --save
 Include it in your application:
 
 ```javascript
-var jeton = require('jeton')({
+var jeton = require('jeton');
+var storage = jeton.storage({
   expires: 24*60*60*1000, // 24 hours
   tokenLength: 32,
   checkIdentity: true,
@@ -73,18 +74,22 @@ Can be used to pass additional policyOptions to the catbox [policy](https://gith
 
 ## API
 
-#### jeton.start(callback)
+#### storage.start(callback)
 
 This has to be run before you can start to store or retrieve tokens. It starts the catbox client and establishes a connection to your persistent data store. The callback is called, when the store is successfully initalized. Its signature is `callback(err)` where `err` can be an error passed by the catbox client (e.g. connection problems).
 
-#### jeton.store(identity, [data,] callback)
+#### storage.stop()
+
+This stops the storage and closes the database connection.
+
+#### storage.store(identity, [data,] callback)
 
 Generates a token and stores it while associating the identity. In most cases the identity will be your unique user identifier (e.g. an email address or userId). You can store additional data with the token, but this is optional. This could be the type of the token (e.g. password-reset or email-verification). The callback has the signature `callback(err, token)`, where `token` is the generated token-string.
 
 Example:
 
 ```javascript
-jeton.store('foo@bar.com', { type: 'check-email' }, function(err, token) {
+storage.store('foo@bar.com', { type: 'check-email' }, function(err, token) {
   if (err) {
     // handle error here
   }
@@ -92,14 +97,14 @@ jeton.store('foo@bar.com', { type: 'check-email' }, function(err, token) {
 });
 ```
 
-#### jeton.retrieve(token, [identity,] callback)
+#### storage.retrieve(token, [identity,] callback)
 
 Retrieves the associated data from store. If `checkIdentity` is enabled (which is default) the identity has to be provided as second argument. The callback has the signature `callback(err, data)` where `data` is the data originally saved with this token. If no token was found, `data` equals to null.
 
 Example:
 
 ```javascript
-jeton.retrieve('b8cc762cc...', 'foo@bar.com', function(err, data) {
+storage.retrieve('b8cc762cc...', 'foo@bar.com', function(err, data) {
   if (err) {
     // handle error here
   }
@@ -113,14 +118,14 @@ jeton.retrieve('b8cc762cc...', 'foo@bar.com', function(err, data) {
 });
 ```
 
-#### jeton.invalidate(token, callback)
+#### storage.invalidate(token, callback)
 
 After your token-based action (e.g. email-validation) is completed, you would typically invalidate (i.e. delete) the token. This can be achieved with this function. The callback has the signature `callback(err)`.
 
 Example:
 
 ```javascript
-jeton.invalidate('b8cc762cc...', function(err) {
+storage.invalidate('b8cc762cc...', function(err) {
   if (err) {
     // handle error here
   }

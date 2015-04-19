@@ -6,7 +6,8 @@ var Code = require('code');
 // Test shortcuts
 
 var lab = exports.lab = Lab.script();
-var beforeEach = lab.beforeEach;
+var before = lab.before;
+var after = lab.after;
 var describe = lab.experiment;
 var it = lab.test;
 var expect = Code.expect;
@@ -20,7 +21,7 @@ describe('Token storage', function() {
 
         it('initializes without options', function (done) {
             expect(function () {
-                require('../lib')();
+                require('../lib').storage();
             }).not.to.throw();
 
             done();
@@ -29,7 +30,7 @@ describe('Token storage', function() {
 
         it('initializes with options', function (done) {
             expect(function () {
-                require('../lib')({
+                require('../lib').storage({
                     expires: 48*60*60*1000
                 });
             }).not.to.throw();
@@ -39,22 +40,23 @@ describe('Token storage', function() {
         });
 
         it('generates a token', function (done) {
-            var token = require('../lib')().generate();
+            var token = require('../lib').storage().generate();
             expect(token).to.be.a.string();
             expect(token).to.have.length(64);
             done();
         });
 
-        it('starts the token storage', function (done) {
-            var token = require('../lib')();
+        it('starts and stops the token storage', function (done) {
+            var token = require('../lib').storage();
             token.start(function (err) {
                 if (err) throw err;
+                token.stop(done);
                 done();
             });
         });
 
         it('errors on catbox engine start error', function (done) {
-            var token = require('../lib')();
+            var token = require('../lib').storage();
 
             sinon.stub(Catbox.Client.prototype, 'start', function (cb) {
                 cb(new Error('Fake err'));
@@ -70,11 +72,16 @@ describe('Token storage', function() {
 
     describe('token CRI', function () {
 
-    	var tokenStorage = require('../lib')();
+    	var tokenStorage = require('../lib').storage();
 
-    	beforeEach(function (done) {
+    	before(function (done) {
     		tokenStorage.start(done);
     	});
+
+        after(function (done) {
+            tokenStorage.stop();
+            done();
+        });
 
 		it('creates tokens', function (done) {
 
@@ -115,10 +122,13 @@ describe('Token storage', function() {
     		tokenStorage._policy.set('mytoken', {
     			identity: 'me@me.com',
     			foo: 'bar'
-    		}, 0, function (err) {
+    		}, 5000, function (err) {
     			if (err) return done(err);
 
     			tokenStorage.retrieve('mytoken', 'me@me.com', function (err, data) {
+                    if (err) {
+                        return done(err);
+                    }
     				expect(data.foo).to.equal('bar');
     				done();
     			});
@@ -140,7 +150,7 @@ describe('Token storage', function() {
 
     		tokenStorage._policy.set('mytoken', {
     			identity: 'me@me.com'
-    		}, 0, function (err) {
+    		}, 5000, function (err) {
     			if (err) return done(err);
 
     			tokenStorage.retrieve('mytoken', 'me@moo.com', function (err, data) {
@@ -159,7 +169,7 @@ describe('Token storage', function() {
 
             tokenStorage._policy.set('mytoken', {
                 identity: 'me@me.com'
-            }, 0, function (err) {
+            }, 5000, function (err) {
                 if (err) return done(err);
 
                 tokenStorage.retrieve('mytoken', function (err, data) {
@@ -177,7 +187,7 @@ describe('Token storage', function() {
 
             tokenStorage._policy.set('mytoken', {
                 identity: 'beep@boop.com'
-            }, 0, function (err) {
+            }, 5000, function (err) {
                 if (err) return done(err);
 
                 tokenStorage.retrieve('mytoken', function (err, data) {

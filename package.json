@@ -8,7 +8,13 @@
   },
   "repository": "https://github.com/chmanie/jeton.git",
   "author": "Christian Maniewski <chmanie@fastmail.com>",
-  "keywords": ["token", "storage", "forgot", "password", "email"],
+  "keywords": [
+    "token",
+    "storage",
+    "forgot",
+    "password",
+    "email"
+  ],
   "license": "MIT",
   "devDependencies": {
     "code": "^1.2.1",
@@ -18,6 +24,6 @@
   "dependencies": {
     "catbox": "^4.2.0",
     "catbox-memory": "^1.1.1",
-    "defaults": "^1.0.2"
+    "object-assign": "^2.0.0"
   }
 }
